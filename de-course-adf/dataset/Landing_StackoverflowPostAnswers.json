@@ -5,12 +5,20 @@
 			"referenceName": "Data_Lake_Storage",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"file_name": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "stackoverflow_post_answers.csv",
+				"fileName": {
+					"value": "@concat(dataset().file_name, '.csv')",
+					"type": "Expression"
+				},
 				"folderPath": "stackoverflow",
 				"fileSystem": "landing"
 			},
