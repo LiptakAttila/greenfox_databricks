@@ -1,0 +1,10 @@
+{
+	"name": "Data_Lake_Storage",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://dataengineeraccount.dfs.core.windows.net/"
+		}
+	}
+}
