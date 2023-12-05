@@ -124,12 +124,20 @@
 					"referenceName": "Data_Lake_Storage",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"yyyymmdd": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "Json",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "company_detail_yyyymmdd.json",
+						"fileName": {
+							"value": "@concat('company_detail_', dataset().yyyymmdd, '.json')",
+							"type": "Expression"
+						},
 						"folderPath": "company_detail",
 						"fileSystem": "landing"
 					}
@@ -149,12 +157,20 @@
 					"referenceName": "Data_Lake_Storage",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"yyyymmdd": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "Json",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "githubarchiveday_yyyymmdd.json",
+						"fileName": {
+							"value": "@concat('guthubarchive_day_', dataset().yyyymmdd, '.json')",
+							"type": "Expression"
+						},
 						"folderPath": "github",
 						"fileSystem": "landing"
 					}
@@ -232,9 +248,19 @@
 					"referenceName": "Rest_Api",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"yyyymmdd": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "RestResource",
-				"typeProperties": {},
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('get_company_data_api?p_load_date=', dataset().yyyymmdd)",
+						"type": "Expression"
+					}
+				},
 				"schema": []
 			},
 			"dependsOn": [
@@ -250,12 +276,20 @@
 					"referenceName": "github_data_lake_gen2",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"yyyymmdd": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "Json",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "githubarchiveday_yyyymmdd.json",
+						"fileName": {
+							"value": "@concat('githubarchive_day_',dataset().yyyymmdd,'.json')\n",
+							"type": "Expression"
+						},
 						"folderPath": "github",
 						"fileSystem": "external"
 					}
@@ -476,6 +510,508 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/Stackoverflow_synapse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/github')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_load_date",
+							"value": {
+								"value": "@if(not(equals(pipeline().parameters.p_load_date, null)), pipeline().parameters.p_load_date, getPastTime(1, 'Day', 'yyyyMMdd'))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "Source_GitHubArchiveDay",
+								"type": "DatasetReference",
+								"parameters": {
+									"yyyymmdd": {
+										"value": "@variables('v_load_date')",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Landing_GitHubArchiveDay",
+								"type": "DatasetReference",
+								"parameters": {
+									"yyyymmdd": {
+										"value": "@variables('v_load_date')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_load_date": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"v_load_date": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Source_GitHubArchiveDay')]",
+				"[concat(variables('factoryId'), '/datasets/Landing_GitHubArchiveDay')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/rest_api')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "v_load_date",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_load_date",
+							"value": {
+								"value": "@if(not(equals(pipeline().parameters.p_load_date, null)), pipeline().parameters.p_load_date, getPastTime(1, 'day', 'yyyyMMdd'))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "v_load_date",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "Source_CompanyDetail",
+								"type": "DatasetReference",
+								"parameters": {
+									"yyyymmdd": {
+										"value": "@variables('v_load_date')",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Landing_CompanyDetail",
+								"type": "DatasetReference",
+								"parameters": {
+									"yyyymmdd": {
+										"value": "@variables('v_load_date')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_load_date": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"v_load_date": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Source_CompanyDetail')]",
+				"[concat(variables('factoryId'), '/datasets/Landing_CompanyDetail')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/stackoverflow_answer')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Source_StackoverflowPostAnswers",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Landing_StackoverflowPostAnswers",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Source_StackoverflowPostAnswers')]",
+				"[concat(variables('factoryId'), '/datasets/Landing_StackoverflowPostAnswers')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/stackoverflow_question')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Source_StackoverflowPostQuestions",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Landing_StackoverflowPostQuestions",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Source_StackoverflowPostQuestions')]",
+				"[concat(variables('factoryId'), '/datasets/Landing_StackoverflowPostQuestions')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "github",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "github",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"p_load_date": {
+									"value": "@variables('v_load_date')",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "stackoverflow_answers",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "stackoverflow_answer",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "rest_api",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "rest_api",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"p_load_date": {
+									"value": "@variables('v_load_date')",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "stackoverflow_questions",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "stackoverflow_question",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_load_date",
+							"value": {
+								"value": "@if(not(equals(pipeline().parameters.p_load_date, null)), pipeline().parameters.p_load_date, getPastTime(1, 'day', 'yyyyMMdd'))",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_load_date": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"v_load_date": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/github')]",
+				"[concat(variables('factoryId'), '/pipelines/stackoverflow_answer')]",
+				"[concat(variables('factoryId'), '/pipelines/rest_api')]",
+				"[concat(variables('factoryId'), '/pipelines/stackoverflow_question')]"
 			]
 		}
 	]
