@@ -1,0 +1,20 @@
+{
+	"name": "Landing_CompanyDetail",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Data_Lake_Storage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "company_detail_yyyymmdd.json",
+				"folderPath": "company_detail",
+				"fileSystem": "landing"
+			}
+		},
+		"schema": {}
+	}
+}
