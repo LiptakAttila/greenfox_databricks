@@ -190,12 +190,20 @@
 					"referenceName": "Data_Lake_Storage",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"file_name": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "stackoverflow_post_answers.csv",
+						"fileName": {
+							"value": "@concat(dataset().file_name, '.csv')",
+							"type": "Expression"
+						},
 						"folderPath": "stackoverflow",
 						"fileSystem": "landing"
 					},
@@ -219,12 +227,20 @@
 					"referenceName": "Data_Lake_Storage",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"p_file_name_2": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "stackoverflow_post_questions.csv",
+						"fileName": {
+							"value": "@concat(dataset().p_file_name_2, '.csv')",
+							"type": "Expression"
+						},
 						"folderPath": "stackoverflow",
 						"fileSystem": "landing"
 					},
@@ -741,7 +757,14 @@
 					{
 						"name": "Copy data1",
 						"type": "Copy",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -753,6 +776,15 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlDWSource",
+								"additionalColumns": [
+									{
+										"name": "datetime",
+										"value": {
+											"value": "@utcnow()",
+											"type": "Expression"
+										}
+									}
+								],
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -788,13 +820,45 @@
 							{
 								"referenceName": "Landing_StackoverflowPostAnswers",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"file_name": {
+										"value": "@variables('v_file_name')",
+										"type": "Expression"
+									}
+								}
 							}
 						]
+					},
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_file_name",
+							"value": {
+								"value": "@pipeline().parameters.p_file_name",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_file_name": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"v_file_name": {
+						"type": "String"
+					}
 				},
 				"annotations": []
 			},
@@ -812,7 +876,14 @@
 					{
 						"name": "Copy data1",
 						"type": "Copy",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -824,6 +895,15 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlDWSource",
+								"additionalColumns": [
+									{
+										"name": "datetime",
+										"value": {
+											"value": "@utcnow()",
+											"type": "Expression"
+										}
+									}
+								],
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -859,13 +939,45 @@
 							{
 								"referenceName": "Landing_StackoverflowPostQuestions",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"p_file_name_2": {
+										"value": "@variables('v_file_name2')",
+										"type": "Expression"
+									}
+								}
 							}
 						]
+					},
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_file_name2",
+							"value": {
+								"value": "@pipeline().parameters.p_file_name_2",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_file_name_2": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"v_file_name2": {
+						"type": "String"
+					}
 				},
 				"annotations": []
 			},
@@ -911,9 +1023,9 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "Set variable1",
+								"activity": "Set variable2",
 								"dependencyConditions": [
-									"Completed"
+									"Succeeded"
 								]
 							}
 						],
@@ -924,7 +1036,12 @@
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"p_file_name": {
+									"value": "@variables('v_file_name')",
+									"type": "Expression"
+								}
+							}
 						}
 					},
 					{
@@ -958,9 +1075,9 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "Set variable1",
+								"activity": "Set variable3",
 								"dependencyConditions": [
-									"Completed"
+									"Succeeded"
 								]
 							}
 						],
@@ -971,7 +1088,12 @@
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"p_file_name_2": {
+									"value": "@variables('v_file_name_2')",
+									"type": "Expression"
+								}
+							}
 						}
 					},
 					{
@@ -990,6 +1112,40 @@
 								"type": "Expression"
 							}
 						}
+					},
+					{
+						"name": "Set variable2",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_file_name",
+							"value": {
+								"value": "@pipeline().parameters.p_file_name",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set variable3",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_file_name_2",
+							"value": {
+								"value": "@pipeline().parameters.p_file_name_2",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
@@ -998,10 +1154,22 @@
 				"parameters": {
 					"p_load_date": {
 						"type": "string"
+					},
+					"p_file_name": {
+						"type": "string"
+					},
+					"p_file_name_2": {
+						"type": "string"
 					}
 				},
 				"variables": {
 					"v_load_date": {
+						"type": "String"
+					},
+					"v_file_name": {
+						"type": "String"
+					},
+					"v_file_name_2": {
 						"type": "String"
 					}
 				},
