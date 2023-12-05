@@ -1,0 +1,91 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "datafactory22222"
+		},
+		"Stackoverflow_synapse_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Stackoverflow_synapse'"
+		},
+		"To_Github_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'To_Github'"
+		},
+		"github_data_lake_gen2_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'github_data_lake_gen2'"
+		},
+		"Data_Lake_Storage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dataengineeraccount.dfs.core.windows.net/"
+		},
+		"Rest_Api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://de-course-ingest-api.azurewebsites.net/api/"
+		},
+		"To_Github_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dataengineeraccount.dfs.core.windows.net/"
+		},
+		"github_data_lake_gen2_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://decoursesacc.dfs.core.windows.net"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "datafactory22222_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"Stackoverflow_synapse_connectionString": {
+						"value": "[parameters('Stackoverflow_synapse_connectionString')]"
+					},
+					"To_Github_accountKey": {
+						"value": "[parameters('To_Github_accountKey')]"
+					},
+					"github_data_lake_gen2_accountKey": {
+						"value": "[parameters('github_data_lake_gen2_accountKey')]"
+					},
+					"Data_Lake_Storage_properties_typeProperties_url": {
+						"value": "[parameters('Data_Lake_Storage_properties_typeProperties_url')]"
+					},
+					"Rest_Api_properties_typeProperties_url": {
+						"value": "[parameters('Rest_Api_properties_typeProperties_url')]"
+					},
+					"To_Github_properties_typeProperties_url": {
+						"value": "[parameters('To_Github_properties_typeProperties_url')]"
+					},
+					"github_data_lake_gen2_properties_typeProperties_url": {
+						"value": "[parameters('github_data_lake_gen2_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

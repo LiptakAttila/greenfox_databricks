@@ -1,0 +1,482 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "datafactory22222"
+		},
+		"Stackoverflow_synapse_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Stackoverflow_synapse'"
+		},
+		"To_Github_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'To_Github'"
+		},
+		"github_data_lake_gen2_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'github_data_lake_gen2'"
+		},
+		"Data_Lake_Storage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dataengineeraccount.dfs.core.windows.net/"
+		},
+		"Rest_Api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://de-course-ingest-api.azurewebsites.net/api/"
+		},
+		"To_Github_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dataengineeraccount.dfs.core.windows.net/"
+		},
+		"github_data_lake_gen2_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://decoursesacc.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Landing_CompanyDetail')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Data_Lake_Storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "company_detail_yyyymmdd.json",
+						"folderPath": "company_detail",
+						"fileSystem": "landing"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Data_Lake_Storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Landing_GitHubArchiveDay')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Data_Lake_Storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "githubarchiveday_yyyymmdd.json",
+						"folderPath": "github",
+						"fileSystem": "landing"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Data_Lake_Storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Landing_StackoverflowPostAnswers')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Data_Lake_Storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "stackoverflow_post_answers.csv",
+						"folderPath": "stackoverflow",
+						"fileSystem": "landing"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Data_Lake_Storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Landing_StackoverflowPostQuestions')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Data_Lake_Storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "stackoverflow_post_questions.csv",
+						"folderPath": "stackoverflow",
+						"fileSystem": "landing"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Data_Lake_Storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Source_CompanyDetail')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Rest_Api",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Rest_Api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Source_GitHubArchiveDay')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "github_data_lake_gen2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "githubarchiveday_yyyymmdd.json",
+						"folderPath": "github",
+						"fileSystem": "external"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/github_data_lake_gen2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Source_StackoverflowPostAnswers')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Stackoverflow_synapse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "title",
+						"type": "nvarchar"
+					},
+					{
+						"name": "accepted_answer_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "answer_count",
+						"type": "nvarchar"
+					},
+					{
+						"name": "comment_count",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "community_owned_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "creation_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "favorite_count",
+						"type": "nvarchar"
+					},
+					{
+						"name": "last_activity_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "last_edit_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "last_editor_display_name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "last_editor_user_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "owner_display_name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "owner_user_id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "parent_id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "post_type_id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "score",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "tags",
+						"type": "nvarchar"
+					},
+					{
+						"name": "view_count",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "stackoverflow",
+					"table": "stackoverflow_post_answers"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Stackoverflow_synapse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Source_StackoverflowPostQuestions')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Stackoverflow_synapse",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "title",
+						"type": "nvarchar"
+					},
+					{
+						"name": "accepted_answer_id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "answer_count",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "comment_count",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "community_owned_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "creation_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "favorite_count",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "last_activity_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "last_edit_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "last_editor_display_name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "last_editor_user_id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "owner_display_name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "owner_user_id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "parent_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "post_type_id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "score",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "tags",
+						"type": "nvarchar"
+					},
+					{
+						"name": "view_count",
+						"type": "bigint",
+						"precision": 19
+					}
+				],
+				"typeProperties": {
+					"schema": "stackoverflow",
+					"table": "stackoverflow_post_questions"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Stackoverflow_synapse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Data_Lake_Storage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('Data_Lake_Storage_properties_typeProperties_url')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Rest_Api')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('Rest_Api_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Stackoverflow_synapse')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('Stackoverflow_synapse_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/To_Github')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('To_Github_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('To_Github_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/github_data_lake_gen2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('github_data_lake_gen2_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('github_data_lake_gen2_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
