@@ -5,12 +5,20 @@
 			"referenceName": "Data_Lake_Storage",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"yyyymmdd": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "company_detail_yyyymmdd.json",
+				"fileName": {
+					"value": "@concat('company_detail_', dataset().yyyymmdd, '.json')",
+					"type": "Expression"
+				},
 				"folderPath": "company_detail",
 				"fileSystem": "landing"
 			}

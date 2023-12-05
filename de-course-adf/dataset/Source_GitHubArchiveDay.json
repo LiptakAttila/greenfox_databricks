@@ -5,12 +5,20 @@
 			"referenceName": "github_data_lake_gen2",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"yyyymmdd": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "githubarchiveday_yyyymmdd.json",
+				"fileName": {
+					"value": "@concat('githubarchive_day_',dataset().yyyymmdd,'.json')\n",
+					"type": "Expression"
+				},
 				"folderPath": "github",
 				"fileSystem": "external"
 			}

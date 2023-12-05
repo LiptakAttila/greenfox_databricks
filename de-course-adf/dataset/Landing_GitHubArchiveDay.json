@@ -5,12 +5,20 @@
 			"referenceName": "Data_Lake_Storage",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"yyyymmdd": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "githubarchiveday_yyyymmdd.json",
+				"fileName": {
+					"value": "@concat('guthubarchive_day_', dataset().yyyymmdd, '.json')",
+					"type": "Expression"
+				},
 				"folderPath": "github",
 				"fileSystem": "landing"
 			}

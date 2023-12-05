@@ -5,8 +5,19 @@
 			"referenceName": "Rest_Api",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"yyyymmdd": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('get_company_data_api?p_load_date=', dataset().yyyymmdd)",
+				"type": "Expression"
+			}
+		},
 		"schema": []
 	}
 }
