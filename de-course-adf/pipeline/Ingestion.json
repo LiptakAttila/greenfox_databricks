@@ -33,9 +33,9 @@
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "Set variable1",
+						"activity": "Set variable2",
 						"dependencyConditions": [
-							"Completed"
+							"Succeeded"
 						]
 					}
 				],
@@ -45,7 +45,13 @@
 						"referenceName": "stackoverflow_answer",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"p_file_name": {
+							"value": "@variables('v_file_name')",
+							"type": "Expression"
+						}
+					}
 				}
 			},
 			{
@@ -79,9 +85,9 @@
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "Set variable1",
+						"activity": "Set variable3",
 						"dependencyConditions": [
-							"Completed"
+							"Succeeded"
 						]
 					}
 				],
@@ -91,7 +97,13 @@
 						"referenceName": "stackoverflow_question",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"p_file_name_2": {
+							"value": "@variables('v_file_name_2')",
+							"type": "Expression"
+						}
+					}
 				}
 			},
 			{
@@ -119,16 +131,52 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_file_name",
+					"value": {
+						"value": "@pipeline().parameters.p_file_name",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set variable3",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_file_name_2",
+					"value": {
+						"value": "@pipeline().parameters.p_file_name_2",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
 			"p_load_date": {
 				"type": "string"
+			},
+			"p_file_name": {
+				"type": "string"
+			},
+			"p_file_name_2": {
+				"type": "string"
 			}
 		},
 		"variables": {
 			"v_load_date": {
+				"type": "String"
+			},
+			"v_file_name": {
+				"type": "String"
+			},
+			"v_file_name_2": {
 				"type": "String"
 			}
 		},

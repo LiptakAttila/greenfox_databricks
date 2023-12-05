@@ -24,6 +24,12 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
+						"additionalColumns": [
+							{
+								"name": "datetime",
+								"value": "@utcnow()"
+							}
+						],
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
